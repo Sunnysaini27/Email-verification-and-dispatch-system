@@ -1,0 +1,58 @@
+
+
+import mysql.connector
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+
+# MySQL database connection configuration
+db_config = {
+    'host': 'localhost',
+    'database': 'Emails',
+    'user': 'sunnysaini27699',
+    'password': 'yuphoria123',
+    'auth_plugin': 'mysql_native_password'
+}
+
+
+# Email configuration
+email_sender = 'sunny27061999@outlook.com'
+email_password = 'Yuphoria@123'  # Consider using environment variables or a secure vault for passwords
+smtp_server = "smtp-mail.outlook.com"
+smtp_port = 587
+
+
+# Establish database connection
+conn = mysql.connector.connect(**db_config)
+cursor = conn.cursor()
+
+# Query to fetch valid email addresses
+query = "SELECT Email FROM email_verification WHERE is_valid = 1"
+cursor.execute(query)
+emails = cursor.fetchall()
+
+
+# Function to send email
+def send_email(to_address):
+    msg = MIMEMultipart()
+    msg['From'] = email_sender
+    msg['To'] = to_address
+    msg['Subject'] = 'Test Email'
+
+    body = 'This is a test email.'
+    msg.attach(MIMEText(body, 'plain'))
+
+    with smtplib.SMTP(smtp_server, smtp_port) as server:
+        server.starttls()
+        server.login(email_sender, email_password)
+        server.sendmail(email_sender, to_address, msg.as_string())
+
+
+# Send emails to valid addresses
+for (Email,) in emails:
+    send_email(Email)
+    print(f'Email sent to: {Email}')
+
+# Close the database connection
+cursor.close()
+conn.close()

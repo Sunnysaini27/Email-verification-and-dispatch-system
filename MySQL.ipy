@@ -1,0 +1,36 @@
+import pandas as pd
+import mysql.connector
+
+# Load the Excel file
+df = pd.read_excel("diverse_email_dataset2.xlsx")
+
+
+# Database connection details
+db_config = {
+    'host': 'localhost',
+    'database': 'Emails',
+    'user': 'sunnysaini27699',
+    'password': 'yuphoria123',
+    'auth_plugin': 'mysql_native_password'
+}
+
+# Connect to the database
+connection = mysql.connector.connect(**db_config)
+cursor = connection.cursor()
+
+# Empty the table before adding new data
+cursor.execute("TRUNCATE TABLE email_verification")
+
+# Insert data into the database
+for index, row in df.iterrows():
+    email = row['Email']
+    is_valid = row['Status']
+    query = "INSERT INTO email_verification (email, is_valid) VALUES (%s, %s)"
+    cursor.execute(query, (email, is_valid))
+
+# Commit the transaction and close the connection
+connection.commit()
+cursor.close()
+connection.close()
+
+print("Data has been stored in the database.")
